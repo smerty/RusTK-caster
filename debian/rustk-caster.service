@@ -1,0 +1,28 @@
+[Unit]
+Description=rustk-caster: u-blox F9P RTK base pushing RTCM to NTRIP casters
+Documentation=file:///usr/share/doc/rustk-caster/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/rustk-caster /etc/rustk-caster/config.toml
+User=rustk-caster
+Group=rustk-caster
+SupplementaryGroups=dialout
+Restart=always
+RestartSec=5
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

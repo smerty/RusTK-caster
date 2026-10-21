@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+# On upgrade the service keeps running; postinst restarts it with the new binary.
+if [ "$1" = "remove" ]; then
+    systemctl disable --now rustk-caster.service >/dev/null 2>&1 || true
+fi
+
+exit 0

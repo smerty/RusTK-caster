@@ -1,0 +1,59 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test
+
+  deb:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # 64-bit Raspberry Pi OS (Pi 3/4/5, Zero 2)
+          - target: aarch64-unknown-linux-musl
+          # 32-bit Raspberry Pi OS; ARMv6 so it also runs on Pi 1 / Zero
+          - target: arm-unknown-linux-musleabihf
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cross,cargo-deb
+      - name: Set package version from tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: sed -i "0,/^version = .*/s//version = \"${GITHUB_REF_NAME#v}\"/" Cargo.toml
+      - run: cross build --release --target ${{ matrix.target }}
+      - name: Build package
+        run: |
+          cargo deb --no-build --no-strip --target ${{ matrix.target }}
+          # Version-less copy so releases/latest/download/<name> is a stable URL.
+          cd target/${{ matrix.target }}/debian
+          deb=$(ls rustk-caster_*.deb)
+          cp "$deb" "rustk-caster_${deb##*_}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb-${{ matrix.target }}
+          path: target/${{ matrix.target }}/debian/*.deb
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: target/${{ matrix.target }}/debian/*.deb
+          generate_release_notes: true

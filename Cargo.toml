@@ -1,0 +1,39 @@
+[package]
+name = "rustk-caster"
+version = "0.1.0"
+edition = "2021"
+description = "u-blox F9P RTK base station pushing RTCM3 to any number of NTRIP casters"
+license = "MIT"
+repository = "https://github.com/ppicazo/rustk-caster"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+base64 = "0.22"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1"
+serialport = { version = "4", default-features = false }
+
+[profile.release]
+strip = true
+
+[package.metadata.deb]
+maintainer = "Paul Picazo <62913+ppicazo@users.noreply.github.com>"
+section = "net"
+priority = "optional"
+extended-description = """\
+Configures a u-blox ZED-F9P as a fixed RTK base over serial/USB, validates its \
+RTCM3 output, adds 1008/1033 descriptors, and pushes the stream to an \
+unlimited number of NTRIP casters. Replaces RTKBase's two-caster limit."""
+maintainer-scripts = "debian/"
+assets = [
+    ["target/release/rustk-caster", "usr/bin/", "755"],
+    ["debian/rustk-caster.service", "lib/systemd/system/", "644"],
+    ["config.example.toml", "etc/rustk-caster/config.toml", "600"],
+    ["config.example.toml", "usr/share/doc/rustk-caster/", "644"],
+    ["README.md", "usr/share/doc/rustk-caster/", "644"],
+    ["LICENSE", "usr/share/doc/rustk-caster/", "644"],
+]
+conf-files = ["/etc/rustk-caster/config.toml"]

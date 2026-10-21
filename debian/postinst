@@ -1,0 +1,41 @@
+#!/bin/sh
+set -e
+
+CONFIG=/etc/rustk-caster/config.toml
+
+if [ "$1" = "configure" ]; then
+    if ! getent passwd rustk-caster >/dev/null; then
+        useradd --system --user-group --no-create-home --home-dir /nonexistent \
+            --shell /usr/sbin/nologin rustk-caster
+    fi
+    # Holds caster passwords: readable by the service, not by other users.
+    chown root:rustk-caster "$CONFIG"
+    chmod 640 "$CONFIG"
+
+    systemctl daemon-reload >/dev/null 2>&1 || true
+
+    if grep -q CHANGE_ME "$CONFIG" 2>/dev/null; then
+        cat <<EOF
+
+rustk-caster is installed but not configured yet. Next steps:
+
+  1. Create the config, either from RTKBase:
+       sudo rustk-caster import-rtkbase ~/rtkbase/settings.conf $CONFIG
+     or by hand:
+       sudoedit $CONFIG
+
+  2. Stop RTKBase so it releases the serial port:
+       sudo systemctl disable --now \$(systemctl list-unit-files 'str2str*' 'rtkbase*' --no-legend | awk '{print \$1}')
+
+  3. Start it:
+       sudo systemctl enable --now rustk-caster
+       journalctl -u rustk-caster -f
+
+EOF
+    elif [ -n "$2" ]; then
+        # Upgrade: pick up the new binary if the service was running.
+        systemctl try-restart rustk-caster.service >/dev/null 2>&1 || true
+    fi
+fi
+
+exit 0

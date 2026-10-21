@@ -1,0 +1,58 @@
+# u-blox ZED-F9P on a serial/USB port. On each connect the receiver is put
+# into fixed-base mode and told to output RTCM3. Settings go to the RAM layer
+# only, so the receiver's saved flash config is never modified.
+[receiver]
+device = "/dev/ttyGNSS"
+baud = 115200
+
+# Fixed base position: WGS84 degrees, ellipsoidal height in meters.
+# Use as many decimals as you have; 1e-5 deg is ~1 m.
+lat = 45.0
+lon = -120.0
+height = 100.0
+
+# RTKBase-style list, "(N)" = every N seconds (default 1).
+# F9P native:  1005 1074 1077 1084 1087 1094 1097 1124 1127 1230
+# Generated:   1008 1033 (from antenna/receiver_type/firmware below)
+# Anything else (1004, 1006, 1012, 1019, ...) is logged and ignored.
+messages = "1005(10),1008(10),1033(10),1077,1087,1097,1127,1230(10)"
+
+antenna = "ADVNULLANTENNA"
+receiver_type = "U-blox_ZED-F9P"
+firmware = "HPG 1.32"
+
+reconnect_secs = 5
+idle_timeout_secs = 30   # reopen + reconfigure if no RTCM for this long
+
+# Instead of [receiver], you can relay an existing RTCM3 TCP stream:
+# [source]
+# host = "127.0.0.1"
+# port = 5016
+
+# One [[caster]] block per NTRIP destination. No limit.
+#
+#   protocol       "source" (NTRIP 1.0, default, what str2str used) or "post" (NTRIP 2.0)
+#   username       "post" only; defaults to the mountpoint name
+#   messages       optional list of RTCM types to forward; omit to forward all
+#   reconnect_secs initial retry delay; doubles on repeated failures, max 120s
+
+[[caster]]
+name = "rtk2go"
+host = "rtk2go.com"
+port = 2101
+mountpoint = "MY_MOUNT"
+password = "CHANGE_ME"
+
+[[caster]]
+name = "onocoy"
+host = "servers.onocoy.com"
+port = 2101
+mountpoint = "MY_ONOCOY_MOUNT"
+password = "CHANGE_ME"
+
+# [[caster]]
+# name = "another"
+# host = "caster.example.com"
+# port = 2101
+# mountpoint = "MY_MOUNT"
+# password = "CHANGE_ME"
