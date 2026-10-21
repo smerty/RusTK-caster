@@ -148,6 +148,12 @@ See [config.example.toml](config.example.toml). For each `[[caster]]` block:
 | `messages` | no | e.g. `[1005, 1077, 1230]`; omit to forward everything |
 | `reconnect_secs` | no | initial retry delay, default 5; doubles up to 120s |
 
+## Related
+
+This project pairs with [NearTRIP](https://github.com/smerty/neartrip), a
+nearest-base NTRIP proxy. A public instance runs at
+[rtk.k6sh.com](https://rtk.k6sh.com).
+
 ## License
 
 [MIT](LICENSE)
