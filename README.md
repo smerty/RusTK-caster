@@ -147,6 +147,12 @@ See [config.example.toml](config.example.toml). For each `[[caster]]` block:
 | `username` | no | `post` only, defaults to the mountpoint name |
 | `messages` | no | e.g. `[1005, 1077, 1230]`; omit to forward everything |
 | `reconnect_secs` | no | initial retry delay, default 5; doubles up to 120s |
+| `tls` | no | `true` for NTRIPS (TLS); default `false` |
+| `tls_server_name` | no | SNI / cert hostname; defaults to `host` |
+| `tls_insecure` | no | skip cert verify (lab only); default `false` |
+
+For NearTRIP NTRIPS, use the caster's TLS port (typically 2102) with
+`tls = true` and a hostname that matches the Let's Encrypt certificate.
 
 ## Related
 
