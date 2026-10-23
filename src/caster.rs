@@ -128,9 +128,14 @@ async fn connect(cfg: &CasterConfig) -> anyhow::Result<Stream> {
     };
 
     let request = build_request(cfg);
-    tokio::time::timeout(HANDSHAKE_TIMEOUT, stream.write_all(request.as_bytes()))
-        .await
-        .map_err(|_| anyhow::anyhow!("sending handshake timed out"))??;
+    // Flush so TLS ciphertext is not left buffered while we wait for the status.
+    tokio::time::timeout(HANDSHAKE_TIMEOUT, async {
+        stream.write_all(request.as_bytes()).await?;
+        stream.flush().await?;
+        Ok::<(), std::io::Error>(())
+    })
+    .await
+    .map_err(|_| anyhow::anyhow!("sending handshake timed out"))??;
 
     let status = tokio::time::timeout(HANDSHAKE_TIMEOUT, read_status_line(&mut stream))
         .await
@@ -215,14 +220,16 @@ fn status_ok(protocol: Protocol, status: &str) -> bool {
 
 async fn send_frame(writer: &mut StreamWrite, protocol: Protocol, data: &[u8]) -> std::io::Result<()> {
     match protocol {
-        Protocol::Source => writer.write_all(data).await,
+        Protocol::Source => writer.write_all(data).await?,
         Protocol::Post => {
             let mut chunk = format!("{:X}\r\n", data.len()).into_bytes();
             chunk.extend_from_slice(data);
             chunk.extend_from_slice(b"\r\n");
-            writer.write_all(&chunk).await
+            writer.write_all(&chunk).await?;
         }
     }
+    // Drain TLS (or TCP) buffers before treating the frame as sent.
+    writer.flush().await
 }
 
 #[derive(Debug)]
