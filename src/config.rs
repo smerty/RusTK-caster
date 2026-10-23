@@ -118,6 +118,14 @@ pub struct CasterConfig {
     pub user_agent: String,
     /// Only forward these RTCM message types. Omit to forward everything.
     pub messages: Option<HashSet<u16>>,
+    /// Wrap the NTRIP session in TLS (NTRIPS).
+    #[serde(default)]
+    pub tls: bool,
+    /// SNI / certificate hostname. Defaults to `host`.
+    pub tls_server_name: Option<String>,
+    /// Skip certificate verification (lab only).
+    #[serde(default)]
+    pub tls_insecure: bool,
 }
 
 fn default_reconnect_secs() -> u64 {

@@ -50,9 +50,13 @@ port = 2101
 mountpoint = "MY_ONOCOY_MOUNT"
 password = "CHANGE_ME"
 
+# NTRIPS (TLS) publisher into NearTRIP or another TLS caster:
 # [[caster]]
-# name = "another"
-# host = "caster.example.com"
-# port = 2101
+# name = "neartrip"
+# host = "rtk.k6sh.com"
+# port = 2102
 # mountpoint = "MY_MOUNT"
 # password = "CHANGE_ME"
+# tls = true
+# # tls_server_name = "rtk.k6sh.com"  # defaults to host
+# # tls_insecure = false              # lab only; skip cert verify

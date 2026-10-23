@@ -15,9 +15,15 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 anyhow = "1"
 serialport = { version = "4", default-features = false }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+webpki-roots = "0.26"
 
 [profile.release]
 strip = true
+
+[dev-dependencies]
+rcgen = "0.13"
 
 [package.metadata.deb]
 maintainer = "Paul Picazo <62913+ppicazo@users.noreply.github.com>"
